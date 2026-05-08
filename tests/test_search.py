@@ -82,3 +82,21 @@ class TestSearcher:
         """Tests that empty or whitespace-only queries are handled gracefully."""
         assert searcher.find_query("") == []
         assert searcher.find_query("   ") == []
+
+    # --- 3. Tests for Spelling Suggestions ---
+
+    def test_get_query_suggestions(self, searcher):
+        """Tests that the searcher provides accurate spell checking suggestions."""
+        # 'goood' is a typo for 'good', 'frends' is a typo for 'friends'
+        # 'xyz' is too different and should yield no suggestions
+        tokens_with_typos = ['goood', 'frends', 'xyz']
+
+        suggestions = searcher.get_query_suggestions(tokens_with_typos)
+
+        expected_suggestions = {
+            'goood': 'good',
+            'frends': 'friends'
+        }
+
+        assert suggestions == expected_suggestions
+        assert 'xyz' not in suggestions

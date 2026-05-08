@@ -1,5 +1,6 @@
 import re
 import math
+import difflib
 
 
 class Searcher:
@@ -39,7 +40,7 @@ class Searcher:
 
     def find_query(self, query):
         """
-        Searches the index for pages containing ALL words in the query phrase.
+        Searches for pages containing all query words and ranks them by TF-IDF.
 
         Args:
             query (str): A single word or multiple words separated by spaces.
@@ -104,3 +105,29 @@ class Searcher:
         ranked_results.sort(key=lambda x: x[1], reverse=True)
 
         return ranked_results
+
+    def get_query_suggestions(self, tokens, cutoff=0.6):
+        """
+        Identifies tokens not present in the index and suggests closest matches.
+
+        Args:
+            tokens (list): A list of normalized string tokens.
+            cutoff (float): Similarity threshold between 0.0 and 1.0.
+
+        Returns:
+            dict: A mapping of unrecognized tokens to their suggested replacements.
+        """
+        suggestions = {}
+        if not self.index:
+            return suggestions
+
+        valid_words = list(self.index.keys())
+
+        for token in tokens:
+            if token not in self.index:
+                # Find the closest match in the index dictionary keys
+                matches = difflib.get_close_matches(token, valid_words, n=2, cutoff=cutoff)
+                if matches:
+                    suggestions[token] = matches[0]
+
+        return suggestions

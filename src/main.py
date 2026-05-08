@@ -72,6 +72,7 @@ class SearchEngineCLI:
             print("\n[Error] Please specify a word to print. Usage: print <word>")
             return
 
+        clean_word = word.lower().strip()
         print(f"\n[Print] Searching for word: '{word}'...")
         result = self.searcher.print_word(word)
 
@@ -83,6 +84,9 @@ class SearchEngineCLI:
                 print(f"    Positions: {stats['positions']}")
         else:
             print(f"Word '{word}' not found in the index.")
+            suggestions = self.searcher.get_query_suggestions([clean_word])
+            if clean_word in suggestions:
+                print(f" -> Did you mean: '{suggestions[clean_word]}'?")
 
     def do_find(self, query):
         """Executes the 'find' command: Finds pages matching all query words."""
@@ -115,6 +119,14 @@ class SearchEngineCLI:
                 print(f"{i}. {url} (TF-IDF Score: {score:.4f})")
         else:
             print("No pages found matching all words in your query.")
+            suggestions = self.searcher.get_query_suggestions(clean_tokens)
+            if suggestions:
+                suggested_query = []
+                for token in clean_tokens:
+                    suggested_query.append(suggestions.get(token, token))
+
+                suggested_str = " ".join(suggested_query)
+                print(f" -> Did you mean: '{suggested_str}'?")
 
     def run(self):
         """Runs the interactive command loop."""
