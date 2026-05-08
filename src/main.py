@@ -1,5 +1,6 @@
 import os
 import sys
+import re
 
 from src.crawler import Crawler
 from src.indexer import Indexer
@@ -93,7 +94,19 @@ class SearchEngineCLI:
             print("\n[Error] Please specify a search query. Usage: find <query>")
             return
 
-        print(f"\n[Find] Searching for: '{query}'...")
+        clean_tokens = re.findall(r'\b\w+\b', query.lower())
+        if not clean_tokens:
+            print("\n[Error] Query contains only invalid characters or punctuation.")
+            return
+
+        clean_query_str = " ".join(clean_tokens)
+
+        if query.strip() != clean_query_str:
+            print(f"[Find] Normalizing query from '{query}' to '{clean_query_str}'...")
+        else:
+            print(f"[Find] Searching for: '{clean_query_str}'...")
+
+        print(f"[Find] Searching for: '{clean_query_str}'...")
         matching_urls = self.searcher.find_query(query)
 
         if matching_urls:
