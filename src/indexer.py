@@ -12,6 +12,7 @@ class Indexer:
         """Initializes an empty dictionary to store the inverted index."""
         # Structure: { word: { url: { 'frequency': int, 'positions': [int] } } }
         self.index = {}
+        self.total_documents = 0
 
     def _tokenize(self, text):
         """
@@ -37,6 +38,10 @@ class Indexer:
             crawled_data (list): A list of dictionaries containing 'url' and 'content'.
         """
         self.index = {}  # Reset index before building
+
+        # Filter out invalid pages to get an accurate total document count
+        valid_pages = [page for page in crawled_data if page.get('url') and page.get('content')]
+        self.total_documents = len(valid_pages)
 
         for page in crawled_data:
             url = page.get('url')
@@ -71,9 +76,13 @@ class Indexer:
         Returns:
             bool: True if saving was successful, False otherwise.
         """
+        data_to_save = {
+            "metadata": {"total_documents": self.total_documents},
+            "index": self.index
+        }
         try:
             with open(filepath, 'w', encoding='utf-8') as f:
-                json.dump(self.index, f, ensure_ascii=False, indent=4)
+                json.dump(data_to_save, f, ensure_ascii=False, indent=4)
             return True
         except Exception as e:
             print(f"Error saving index to {filepath}: {e}")
@@ -91,7 +100,14 @@ class Indexer:
         """
         try:
             with open(filepath, 'r', encoding='utf-8') as f:
-                self.index = json.load(f)
+                data = json.load(f)
+
+                if "metadata" in data and "index" in data:
+                    self.total_documents = data["metadata"]["total_documents"]
+                    self.index = data["index"]
+                else:
+                    self.index = data
+                    self.total_documents = len(set(url for urls in self.index.values() for url in urls.keys()))
             return True
         except FileNotFoundError:
             print(f"Index file not found at {filepath}. Please build the index first.")

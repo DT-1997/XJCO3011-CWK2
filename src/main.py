@@ -46,7 +46,7 @@ class SearchEngineCLI:
         if self.indexer.save(self.index_file):
             print("[Build] Success! Index built and saved.")
             # Automatically load it into memory after building
-            self.searcher = Searcher(self.indexer.get_index())
+            self.searcher = Searcher(self.indexer.get_index(), self.indexer.total_documents)
             self.is_loaded = True
         else:
             print("[Build] Failed to save the index.")
@@ -55,7 +55,7 @@ class SearchEngineCLI:
         """Executes the 'load' command: Read index from file into memory."""
         print(f"\n[Load] Loading index from {self.index_file}...")
         if self.indexer.load(self.index_file):
-            self.searcher = Searcher(self.indexer.get_index())
+            self.searcher = Searcher(self.indexer.get_index(), self.indexer.total_documents)
             self.is_loaded = True
             print(f"[Load] Success! Loaded index with {len(self.indexer.get_index())} unique words.")
         else:
@@ -98,8 +98,8 @@ class SearchEngineCLI:
 
         if matching_urls:
             print(f"--- Found {len(matching_urls)} matching page(s) ---")
-            for i, url in enumerate(matching_urls, 1):
-                print(f"{i}. {url}")
+            for i, (url, score) in enumerate(matching_urls, 1):
+                print(f"{i}. {url} (TF-IDF Score: {score:.4f})")
         else:
             print("No pages found matching all words in your query.")
 

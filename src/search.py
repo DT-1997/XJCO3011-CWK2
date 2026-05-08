@@ -1,4 +1,5 @@
 import re
+import math
 
 
 class Searcher:
@@ -7,7 +8,7 @@ class Searcher:
     Supports single-word lookups and multi-word intersection searches.
     """
 
-    def __init__(self, index_data):
+    def __init__(self, index_data, total_documents):
         """
         Initializes the Searcher with an existing inverted index.
 
@@ -16,6 +17,7 @@ class Searcher:
         """
         # If no index is provided or it's empty, initialize an empty dict to prevent errors
         self.index = index_data if index_data else {}
+        self.total_documents = total_documents
 
     def print_word(self, word):
         """
@@ -79,5 +81,26 @@ class Searcher:
             if not matching_urls:
                 break
 
-        # Return the final set of matching URLs as a list
-        return list(matching_urls)
+        if not matching_urls:
+            return []
+
+        # Calculate TF-IDF scores for the matching URLs
+        ranked_results = []
+        for url in matching_urls:
+            total_score = 0.0
+
+            for word in tokens:
+                tf = self.index[word][url]['frequency']
+                df = len(self.index[word])
+
+                # IDF = log10(Total Documents / Document Frequency)
+                idf = math.log10(self.total_documents / df) if df > 0 else 0
+
+                total_score += (tf * idf)
+
+            ranked_results.append((url, total_score))
+
+        # Sort the results by score in descending order
+        ranked_results.sort(key=lambda x: x[1], reverse=True)
+
+        return ranked_results
