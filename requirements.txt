@@ -1,0 +1,7 @@
+# Web Crawling and HTML Parsing
+requests==2.32.3
+beautifulsoup4==4.12.3
+
+# Automated Testing Framework
+pytest==8.4.2
+pytest-cov==7.1.0
