@@ -59,7 +59,7 @@ Once the shell `>` prompt appears, you can use the following 4 core commands:
     
     Initiates the web crawler, builds the inverted index from scratch, and saves it to disk (`data/index.json`).
 
-    * Note: Due to the 6-second politeness delay, crawling the 10 pages will take approximately 2 minute.
+    * Note: Due to the 6-second politeness delay, crawling the 10 pages will take approximately 2 minutes.
 
     ```
     > build
