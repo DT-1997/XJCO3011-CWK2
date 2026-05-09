@@ -75,8 +75,10 @@ class TestSearcher:
     def test_find_case_insensitive_and_punctuation(self, searcher):
         """Tests that the find query normalizes uppercase and punctuation."""
         results = searcher.find_query("GOOD, Friends!!!")
+
+        extracted_urls = set([res[0] for res in results])
         expected_urls = {"https://example.com/page2"}
-        assert set(results) == expected_urls
+        assert extracted_urls == expected_urls
 
     def test_find_empty_query(self, searcher):
         """Tests that empty or whitespace-only queries are handled gracefully."""

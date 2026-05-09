@@ -79,8 +79,12 @@ class TestIndexer:
         handle = mock_file()
         written_data = "".join(call.args[0] for call in handle.write.call_args_list)
 
-        # Re-load the written string to verify it matches the internal index
-        assert json.loads(written_data) == indexer.get_index()
+        # Deserialize the written JSON string to verify both the metadata and the inverted index
+        saved_json = json.loads(written_data)
+        assert "metadata" in saved_json
+        assert "index" in saved_json
+        assert saved_json["metadata"]["total_documents"] == len(sample_crawled_data)
+        assert saved_json["index"] == indexer.get_index()
 
     @patch("builtins.open", new_callable=mock_open, read_data='{"hello": {"url": {"frequency": 1, "positions": [0]}}}')
     def test_load_index_success(self, mock_file, indexer):

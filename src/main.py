@@ -29,7 +29,7 @@ class SearchEngineCLI:
     def do_build(self):
         """Executes the 'build' command: Crawl -> Build Index -> Save."""
         print(f"\n[Build] Starting web crawler on {self.target_url}...")
-        print("This will take approximately 1 minute due to the 6-second politeness window.")
+        print("This will take approximately 2 minute due to the 6-second politeness window.")
 
         crawler = Crawler(base_url=self.target_url)
         crawled_data = crawler.run()

@@ -73,7 +73,7 @@ class TestSearchEngineCLI:
     # --- 4. Interactive Loop Tests (Mocking user input) ---
 
     @patch('builtins.input', side_effect=['load', 'exit'])
-    @patch('sys.exit')
+    @patch('sys.exit', side_effect=SystemExit)
     def test_run_loop_routing(self, mock_exit, mock_input, cli):
         """
         Tests the REPL loop. Mocks user typing 'load' and then 'exit'.
@@ -82,7 +82,10 @@ class TestSearchEngineCLI:
         cli.do_load = MagicMock()
 
         # Run the CLI loop
-        cli.run()
+        try:
+            cli.run()
+        except SystemExit:
+            pass
 
         # Verify the commands were routed correctly based on the mock inputs
         cli.do_load.assert_called_once()
@@ -92,10 +95,13 @@ class TestSearchEngineCLI:
 
     @patch('builtins.print')
     @patch('builtins.input', side_effect=['fly', 'exit'])
-    @patch('sys.exit')
+    @patch('sys.exit', side_effect=SystemExit)
     def test_unknown_command(self, mock_exit, mock_input, mock_print, cli):
         """Tests handling of an unknown command input."""
-        cli.run()
+        try:
+            cli.run()
+        except SystemExit:
+            pass
 
         # Assert that an error message is printed without crashing
         mock_print.assert_any_call("Unknown command: 'fly'. Valid commands: build, load, print, find, exit")
@@ -103,10 +109,13 @@ class TestSearchEngineCLI:
         mock_exit.assert_called_once_with(0)
 
     @patch('builtins.input', side_effect=['   ', 'exit'])
-    @patch('sys.exit')
+    @patch('sys.exit', side_effect=SystemExit)
     def test_empty_command(self, mock_exit, mock_input, cli):
         """Tests handling of empty or whitespace-only inputs."""
-        cli.run()
+        try:
+            cli.run()
+        except SystemExit:
+            pass
 
         # Ensure the program continues the loop without raising an IndexError
         # and successfully reaches the mock exit command
@@ -114,17 +123,20 @@ class TestSearchEngineCLI:
 
     @patch('builtins.print')
     @patch('builtins.input', side_effect=KeyboardInterrupt)
-    @patch('sys.exit')
+    @patch('sys.exit', side_effect=SystemExit)
     def test_keyboard_interrupt(self, mock_exit, mock_input, mock_print, cli):
         """Tests graceful exit upon a KeyboardInterrupt (Ctrl+C)."""
-        cli.run()
+        try:
+            cli.run()
+        except SystemExit:
+            pass
 
         # Assert the interrupt is caught, a farewell message is printed, and the program exits cleanly
         mock_print.assert_any_call("\nExiting search engine. Goodbye!")
         mock_exit.assert_called_once_with(0)
 
     @patch('builtins.input', side_effect=['bUiLd', 'LOAD', 'pRiNt test', 'fInD query', 'eXiT'])
-    @patch('sys.exit')
+    @patch('sys.exit', side_effect=SystemExit)
     def test_command_case_insensitivity(self, mock_exit, mock_input, cli):
         """Tests that commands are processed correctly regardless of their case."""
         # Mock internal methods to isolate routing logic and avoid actual execution
@@ -133,7 +145,10 @@ class TestSearchEngineCLI:
         cli.do_print = MagicMock()
         cli.do_find = MagicMock()
 
-        cli.run()
+        try:
+            cli.run()
+        except SystemExit:
+            pass
 
         # Verify that mixed-case inputs successfully route to the correct methods
         cli.do_build.assert_called_once()
