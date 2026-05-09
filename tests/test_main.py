@@ -159,3 +159,59 @@ class TestSearchEngineCLI:
 
         # Verify successful exit
         mock_exit.assert_called_once_with(0)
+
+    # --- 6. Tests for Advanced Features (TF-IDF & Spell Check) ---
+
+    @patch('builtins.print')
+    def test_do_print_with_suggestion(self, mock_print, cli):
+        """Tests that the print command suggests a correction when a word is not found."""
+        cli.is_loaded = True
+        cli.searcher = MagicMock()
+
+        # Simulate a scenario where the word is not in the index
+        cli.searcher.print_word.return_value = None
+        # Provide a mock suggestion dictionary
+        cli.searcher.get_query_suggestions.return_value = {"frends": "friends"}
+
+        cli.do_print("frends")
+
+        # Verify internal method calls
+        cli.searcher.print_word.assert_called_once_with("frends")
+        cli.searcher.get_query_suggestions.assert_called_once_with(["frends"])
+
+        # Verify the exact output format
+        mock_print.assert_any_call("Word 'frends' not found in the index.")
+        mock_print.assert_any_call(" -> Did you mean: 'friends'?")
+
+    @patch('builtins.print')
+    def test_do_find_with_tfidf_formatting(self, mock_print, cli):
+        """Tests that the find command correctly formats and prints TF-IDF scores."""
+        cli.is_loaded = True
+        cli.searcher = MagicMock()
+
+        # Simulate a successful search returning a tuple of (URL, Score)
+        cli.searcher.find_query.return_value = [("https://quotes.toscrape.com/page/1/", 1.23456)]
+
+        cli.do_find("good")
+
+        # Verify that the float score is correctly formatted to 4 decimal places
+        mock_print.assert_any_call("1. https://quotes.toscrape.com/page/1/ (TF-IDF Score: 1.2346)")
+
+    @patch('builtins.print')
+    def test_do_find_with_multiple_suggestions(self, mock_print, cli):
+        """Tests that the find command reconstructs and suggests a corrected multi-word query."""
+        cli.is_loaded = True
+        cli.searcher = MagicMock()
+
+        # Simulate a scenario where no exact matches are found
+        cli.searcher.find_query.return_value = []
+        # Provide mock suggestions for multiple misspelled tokens
+        cli.searcher.get_query_suggestions.return_value = {"goood": "good", "frends": "friends"}
+
+        cli.do_find("goood frends")
+
+        # Verify that suggestions were requested for the parsed tokens
+        cli.searcher.get_query_suggestions.assert_called_once_with(["goood", "frends"])
+
+        # Verify that the final suggested string is correctly assembled
+        mock_print.assert_any_call(" -> Did you mean: 'good friends'?")
