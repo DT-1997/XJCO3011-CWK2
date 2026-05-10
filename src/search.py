@@ -126,7 +126,7 @@ class Searcher:
         for token in tokens:
             if token not in self.index:
                 # Find the closest match in the index dictionary keys
-                matches = difflib.get_close_matches(token, valid_words, n=2, cutoff=cutoff)
+                matches = difflib.get_close_matches(token, valid_words, n=1, cutoff=cutoff)
                 if matches:
                     suggestions[token] = matches[0]
 
